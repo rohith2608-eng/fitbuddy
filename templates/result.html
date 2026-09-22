@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitBuddy - Your Workout Plan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: url('/static/images/gym-bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            margin: 40px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 800px;
+        }
+        h2, h3 {
+            text-align: center;
+            color: #222;
+        }
+        .user-info {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .user-info p {
+            margin: 5px 0;
+            font-size: 15px;
+        }
+        .plan-box {
+            background-color: #f1f3f4;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+        .tip-box {
+            background-color: #e8f0fe;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-style: italic;
+        }
+        .feedback-box {
+            background-color: #fce8e6;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #357ae8;
+        }
+        .success-msg {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #4285F4;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if error %}
+            <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                {{ error }}
+            </div>
+            <a href="/" class="home-link">Go Back Home</a>
+        {% else %}
+        
+            {% if feedback_success %}
+                <div class="success-msg">✅ Your plan has been updated based on your feedback!</div>
+            {% endif %}
+
+            <h2>🏋️ Your Personalized Workout Plan</h2>
+            
+            <div class="user-info">
+                <h3>User Information</h3>
+                <p><strong>Name:</strong> {{ username }}</p>
+                <p><strong>User ID:</strong> {{ user_id }}</p>
+                <p><strong>Age:</strong> {{ age }}</p>
+                <p><strong>Weight:</strong> {{ weight }} kg</p>
+                <p><strong>Goal:</strong> {{ goal }}</p>
+                <p><strong>Intensity:</strong> {{ intensity }}</p>
+            </div>
+            
+            <div class="plan-box">
+                <pre>{{ workout_plan }}</pre>
+            </div>
+            
+            <div class="tip-box">
+                <h3>💡 Nutrition Tip</h3>
+                <p>{{ nutrition_tip }}</p>
+            </div>
+            
+            <div class="feedback-box">
+                <h3>📝 Share Your Feedback</h3>
+                <form action="/submit-feedback" method="POST">
+                    <div class="form-group">
+                        <label for="user_id">Your Unique User ID:</label>
+                        <input type="number" id="user_id" name="user_id" value="{{ user_id }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedback">Your Feedback:</label>
+                        <input type="text" id="feedback" name="feedback" placeholder="Let us know how we can improve your plan..." required>
+                    </div>
+                    <button type="submit">Submit Feedback</button>
+                </form>
+            </div>
+            
+            <a href="/" class="home-link">Start Over</a>
+        {% endif %}
+    </div>
+</body>
+</html>
