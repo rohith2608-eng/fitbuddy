@@ -3,98 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitBuddy - Admin Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>FitBuddy — Admin Dashboard</title>
+    <meta name="description" content="View all FitBuddy users and their AI-generated workout plans.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-elevated: rgba(255, 255, 255, 0.06);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(99, 102, 241, 0.3);
+            --text-primary: #f0f0f5;
+            --text-secondary: #9a9ab0;
+            --text-muted: #6b6b80;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            --accent-solid: #8b5cf6;
+        }
+
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            color: #333;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
         }
-        h2 {
-            text-align: center;
-            color: #2c3e50;
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-top: 20px;
+
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
         }
-        th, td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            text-align: left;
-            vertical-align: top;
+
+        /* Navigation */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            animation: fadeInDown 0.6s ease-out;
         }
-        th {
-            background-color: #3498db;
-            color: white;
-            font-weight: bold;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: inherit;
-            font-size: 13px;
-            margin: 0;
-            max-height: 200px;
-            overflow-y: auto;
-            background-color: #f1f3f4;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .home-link {
-            display: block;
-            margin-top: 20px;
-            color: #3498db;
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             text-decoration: none;
-            font-weight: bold;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .brand-link span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: var(--border-accent);
+        }
+
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.6s ease-out 0.1s both;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        /* User Cards */
+        .user-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out both;
+        }
+
+        .user-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+        }
+
+        .user-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .user-card-name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .user-card-id {
+            background: var(--bg-elevated);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-solid);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .user-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .user-meta-item {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .user-meta-item strong {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Plan sections */
+        .plan-section {
+            background: var(--bg-elevated);
+            border-radius: 14px;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .plan-section-header {
+            padding: 14px 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .plan-section-header:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .plan-section-header .toggle-icon {
+            font-size: 12px;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+
+        .plan-section-body {
+            padding: 0 18px 18px;
+            display: none;
+            line-height: 1.7;
+            font-size: 13.5px;
+            color: var(--text-secondary);
+        }
+
+        .plan-section-body.open {
+            display: block;
+        }
+
+        .plan-section-header.open .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .plan-section-body h3 {
+            font-size: 15px;
+            color: var(--text-primary);
+            margin: 16px 0 8px;
+            padding: 8px 12px;
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 2px solid var(--accent-solid);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .plan-section-body h4 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 12px 0 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .plan-section-body strong {
+            color: var(--text-primary);
+        }
+
+        .plan-section-body ul { padding-left: 18px; }
+        .plan-section-body li { margin-bottom: 4px; }
+        .plan-section-body ul li::marker { color: var(--accent-solid); }
+        .plan-section-body hr { border: none; height: 1px; background: var(--border-subtle); margin: 16px 0; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+        @media (max-width: 640px) {
+            .page-wrapper { padding: 20px 12px 40px; }
+            .user-card { padding: 20px 16px; }
+            .user-meta { gap: 12px; }
         }
     </style>
 </head>
 <body>
-    <h2>📋 FitBuddy - All Users & Workout Plans</h2>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>User ID</th>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Weight (kg)</th>
-                <th>Goal</th>
-                <th>Intensity</th>
-                <th style="width: 30%">Original Plan</th>
-                <th style="width: 30%">Updated Plan</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-            <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.name }}</td>
-                <td>{{ user.age }}</td>
-                <td>{{ user.weight }}</td>
-                <td>{{ user.goal }}</td>
-                <td>{{ user.intensity }}</td>
-                <td><pre>{{ user.original_plan }}</pre></td>
-                <td><pre>{{ user.updated_plan }}</pre></td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="8" style="text-align: center; padding: 20px;">No users found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    
-    <a href="/" class="home-link">← Back to Generator</a>
+    <div class="page-wrapper">
+        <nav class="top-nav">
+            <a href="/" class="brand-link">💪 <span>FitBuddy</span></a>
+            <a href="/" class="nav-btn">✨ New Plan</a>
+        </nav>
+
+        <div class="page-header">
+            <h1>📋 All Users & Plans</h1>
+            <p>Dashboard of all generated workout plans</p>
+        </div>
+
+        {% for user in users %}
+        <div class="user-card" style="animation-delay: {{ loop.index0 * 0.1 }}s;">
+            <div class="user-card-header">
+                <div class="user-card-name">{{ user.name }}</div>
+                <div class="user-card-id">ID #{{ user.id }}</div>
+            </div>
+            <div class="user-meta">
+                <div class="user-meta-item"><strong>Age:</strong> {{ user.age }} yrs</div>
+                <div class="user-meta-item"><strong>Weight:</strong> {{ user.weight }} kg</div>
+                <div class="user-meta-item"><strong>Goal:</strong> {{ user.goal }}</div>
+                <div class="user-meta-item"><strong>Intensity:</strong> {{ user.intensity }}</div>
+            </div>
+
+            <div class="plan-section">
+                <div class="plan-section-header" onclick="togglePlan(this)">
+                    <span>🏋️ Original Plan</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="plan-section-body" data-markdown="{{ user.original_plan | e }}"></div>
+            </div>
+
+            <div class="plan-section">
+                <div class="plan-section-header" onclick="togglePlan(this)">
+                    <span>🔄 Updated Plan</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="plan-section-body" data-markdown="{{ user.updated_plan | e }}"></div>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">🏃</span>
+            <p>No users found yet.<br>Generate your first workout plan!</p>
+            <a href="/" class="nav-btn" style="margin-top: 20px; display: inline-flex;">✨ Get Started</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Render all markdown bodies
+        marked.setOptions({ breaks: true, gfm: true });
+
+        document.querySelectorAll('.plan-section-body[data-markdown]').forEach(el => {
+            const raw = el.getAttribute('data-markdown');
+            if (raw && raw !== 'N/A' && raw !== 'Not updated') {
+                el.innerHTML = marked.parse(raw);
+            } else {
+                el.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">' + (raw || 'No plan available') + '</p>';
+            }
+        });
+
+        function togglePlan(header) {
+            const body = header.nextElementSibling;
+            header.classList.toggle('open');
+            body.classList.toggle('open');
+        }
+    </script>
 </body>
 </html>
